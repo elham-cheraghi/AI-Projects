@@ -1,0 +1,1132 @@
+% !TeX program = xelatex
+% !TeX root = main.tex
+% Font: XB Niloofar.ttf  — if not available, replace with another Persian font.
+\documentclass[10.5pt]{exam}
+\usepackage{hyperref}
+\usepackage[a4paper, total={6in, 10in}]{geometry}
+\usepackage{caption}
+\usepackage{algpseudocodex}
+\usepackage{algorithm}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{subfiles}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{mathrsfs}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{tikz}
+\usepackage{xepersian}
+\settextfont{XB Niloofar.ttf}
+
+\definecolor{tableblue}{RGB}{68,114,196}
+\definecolor{lightblue}{RGB}{217,226,243}
+\definecolor{given}{RGB}{200,220,255}
+\definecolor{solved}{RGB}{230,255,230}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{teal},
+    showstringspaces=false,
+    columns=fullflexible
+}
+
+\begin{document}
+\pagestyle{head}
+\firstpageheader{}{}{}
+\runningheader{صفحه \thepage\ از \numpages}{}{}
+\runningheadrule
+
+\begin{tabular}{p{.75\textwidth} l}
+    \multirow{2}{*}{\includegraphics[scale=0.2]{UILOGO.png}} &                           \\ \\
+                                                              & \textbf{علوم کامپیوتر}    \\
+                                                              & \textbf{نیم‌سال دوم ۰۴-۰۵} \\
+                                                              & \textbf{هوش مصنوعی}       \\ \\
+    \textbf{دانشکده ریاضی و آمار}                             &                           \\
+\end{tabular}\\
+\noindent\rule{\textwidth}{0.5pt}
+
+\vspace{0.1cm}
+
+\textbf{زهرا چراغی، محمد ملائی، فاطمه سعیدی}
+
+\noindent\rule{\textwidth}{0.5pt}
+
+\section*{تمرین دوم: مسائل ارضای محدودیت‌ها}
+
+\section{حل دستی CSP با Backtracking}
+
+\subsection*{سؤال}
+
+متغیرها:
+\[
+[A,B,C,D]
+\]
+
+دامنه‌ها:
+\[
+D(A)=D(B)=D(C)=D(D)=\{1,2,3,4\}
+\]
+
+قیود:
+\[
+[A \neq B]
+\]
+\[
+[B < C]
+\]
+\[
+[A + D = 5]
+\]
+\[
+[C \neq D]
+\]
+\[
+[A < C]
+\]
+
+فرض کنید \lr{Backtracking}:
+
+\begin{itemize}
+    \item متغیرها را به ترتیب \((A,B,C,D)\) انتخاب می‌کند.
+    \item مقادیر را به ترتیب صعودی امتحان می‌کند.
+\end{itemize}
+
+خواسته‌ها:
+
+\begin{enumerate}
+    \item[الف.] درخت جستجو را تا رسیدن به اولین جواب رسم کنید.
+    \item[ب.] تمام نقاطی که \lr{Backtrack} رخ می‌دهد را مشخص کنید.
+    \item[ج.] تعداد کل گره‌های تولیدشده را محاسبه کنید.
+    \item[د.] اولین جواب پیدا شده را بنویسید.
+    \item[ه.] اگر به جای ترتیب فعلی، متغیرها با \lr{MRV} انتخاب شوند، آیا تعداد گره‌های بررسی‌شده کاهش می‌یابد؟ توضیح دهید.
+\end{enumerate}
+\newpage
+\subsection*{جواب}
+
+\textbf{الف)}
+
+\begin{center}
+\begin{tikzpicture}[
+  level 1/.style={sibling distance=45mm},
+  level 2/.style={sibling distance=35mm},
+  level 3/.style={sibling distance=45mm},
+  level 4/.style={sibling distance=26mm},
+  every node/.style={rectangle, rounded corners, draw=black!60, thick, fill=blue!5, minimum size=8mm, inner sep=5pt, font=\small},
+  edge from parent/.style={draw, -latex, thick, color=black!70},
+  failed/.style={draw=red!80, fill=red!10},
+  success/.style={draw=green!70!black, fill=green!15, very thick},
+  normal/.style={draw=blue!70, fill=blue!10},
+  root/.style={draw=black, fill=gray!20, font=\bfseries}
+]
+\node[root] {Root}
+  child { node[normal] {$A=1$}
+    child { node[failed, label={[red, font=\footnotesize]below:نقض $A \neq B$}] {$B=1$} }
+    child { node[normal] {$B=2$}
+      child { node[failed, label={[red, font=\footnotesize]below:نقض $B < C$}] {$C=1$} }
+      child { node[failed, label={[red, font=\footnotesize]below:نقض $B < C$}] {$C=2$} }
+      child { node[normal] {$C=3$}
+        child { node[failed, label={[red, font=\footnotesize]below:نقض $A+D=5$}] {$D=1$} }
+        child { node[failed, label={[red, font=\footnotesize]below:نقض $A+D=5$}] {$D=2$} }
+        child { node[failed, label={[red, font=\footnotesize]below:نقض $A+D=5$}] {$D=3$} }
+        child { node[success, label={[green!50!black, font=\footnotesize\bfseries]below:پاسخ}] {$D=4$} }
+      }
+    }
+  };
+\end{tikzpicture}
+
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{ب)}
+مطابق شبه‌کد الگوریتم  مطرح شده در کتاب، عقب‌گرد زمانی رخ می‌دهد که پس از بررسی تمام مقادیر یک متغیر 
+هیچ مقدار سازگاری یافت نشود و در نتیجه تابع در انتها دستور
+\lr{return failure}
+را اجرا کرده و به فراخوانی قبلی بازگردد.
+در این مسئله، هرچند مقادیری مانند $B=1$، $C=1$، $C=2$، $D=1$، $D=2$ و $D=3$ به دلیل برقرار نبودن شرط
+\lr{value is consistent with assignment}
+رد می‌شوند، اما همواره قبل از پایان دامنه، مقدار سازگار بعدی پیدا می‌شود. بنابراین دستور
+\lr{return failure}
+هرگز اجرا نمی‌شود. در نتیجه، تا رسیدن به اولین پاسخ هیچ عقب‌گردی رخ نمی‌دهد.
+
+
+\vspace{0.5cm}
+
+
+\textbf{ج)}
+با احتساب گره ریشه، مجموعاً \textbf{۱۱ گره} تولید می‌شود:
+\begin{itemize}
+    \item گره ریشه: ۱ گره
+    \item بررسی متغیر $A$: ۱ گره ($A=1$)
+    \item بررسی متغیر $B$: ۲ گره ($B=1, B=2$)
+    \item بررسی متغیر $C$: ۳ گره ($C=1, C=2, C=3$)
+    \item بررسی متغیر $D$: ۴ گره ($D=1, D=2, D=3, D=4$)
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{د)}
+اولین انتسابی که تمام قیود را ارضا می‌کند برابر است با:
+$$ \{A = 1, B = 2, C = 3, D = 4\} $$
+
+\textbf{هـ)}
+در این قسمت، روش \lr{MRV} را همراه با \lr{Forward Checking} در نظر می‌گیریم؛ یعنی پس از هر مقداردهی، دامنهٔ متغیرهای مقدارنگرفته با توجه به قیود مسئله به‌روزرسانی می‌شود.
+
+در ابتدا دامنهٔ همهٔ متغیرها یکسان است:
+\[
+D(A)=D(B)=D(C)=D(D)=\{1,2,3,4\}.
+\]
+بنابراین در گام اول، \lr{MRV} تفاوتی بین متغیرها تشخیص نمی‌دهد. در حالت تساوی، همان ترتیب اولیه را در نظر می‌گیریم و ابتدا \(A\) انتخاب می‌شود. با انتخاب
+\(A=1\)
+و اعمال \lr{Forward Checking}، دامنهٔ متغیرهای باقی‌مانده به صورت زیر تغییر می‌کند:
+\[
+A\neq B \Rightarrow D(B)=\{2,3,4\},
+\]
+\[
+A<C \Rightarrow D(C)=\{2,3,4\},
+\]
+\[
+A+D=5 \Rightarrow D(D)=\{4\}.
+\]
+
+اکنون چون متغیر \(D\) کمترین تعداد مقدار مجاز باقی‌مانده را دارد، طبق \lr{MRV} متغیر بعدی \(D\) انتخاب می‌شود. با انتخاب
+\(D=4\)
+و با توجه به قیود
+\(
+A<C\) و
+\(
+C\neq D
+\)
+دامنهٔ \(C\) برابر می‌شود با
+\(
+D(C)=\{2,3\}
+\)
+.
+اگر \(C=2\) انتخاب شود، از قید \(B<C\) نتیجه می‌شود
+\(
+B<2
+\)
+پس تنها مقدار ممکن برای \(B\)، مقدار \(1\) است. اما چون \(A=1\)، قید \(A\neq B\) نقض می‌شود. بنابراین این شاخه شکست می‌خورد.
+
+در مقدار بعدی:
+\(
+C=3
+\)
+برای \(B\) داریم:
+\(
+B<C \Rightarrow B\in\{1,2\}
+\).
+اما چون \(A=1\)، مقدار \(B=1\) حذف می‌شود و در نتیجه
+\(
+B=2
+\).
+
+پس جواب نهایی به دست می‌آید:
+\[
+\boxed{A=1,\quad B=2,\quad C=3,\quad D=4}
+\]
+اگر تعداد مقدارهای امتحان‌شده یا بررسی‌های ناسازگار را در نظر بگیریم، \lr{MRV} همراه با \lr{Forward Checking} باعث کاهش بررسی‌های اضافی و تعداد گره‌های تولید شده می‌شود.
+
+\vspace{2cm}
+
+\newpage
+
+\section{اعمال MRV و Degree Heuristic}
+
+\subsection*{سؤال}
+
+یک \lr{CSP} با متغیرهای زیر در نظر بگیرید:
+\[
+[A,B,C,D,E,F]
+\]
+
+دامنه‌ها:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|}
+\hline
+{\lr{Variable}} & {\lr{Domain}} \\
+\hline
+
+\(A\) & \(\{1,2\}\) \\
+\hline
+\(B\) & \(\{1,2,3\}\) \\
+\hline
+
+\(C\) & \(\{1,2\}\) \\
+\hline
+\(D\) & \(\{1,2,3,4\}\) \\
+\hline
+
+\(E\) & \(\{1,2\}\) \\
+\hline
+\(F\) & \(\{1,2\}\) \\
+\hline
+\end{tabular}
+\end{center}
+
+گراف قیود:
+
+\begin{itemize}
+    \item \(A\) با \(B,C,D\) در ارتباط است.
+    \item \(B\) با \(A,C,E,F\) در ارتباط است.
+    \item \(C\) با \(A,B,D,E\) در ارتباط است.
+    \item \(D\) با \(A,C,F\) در ارتباط است.
+    \item \(E\) با \(B,C,F\) در ارتباط است.
+    \item \(F\) با \(B,D,E\) در ارتباط است.
+\end{itemize}
+
+فرض کنید متغیرهای \(A\) و \(C\) قبلاً مقداردهی شده‌اند و پس از اعمال \lr{Forward Checking} دامنه‌ها به شکل زیر درآمده‌اند:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|}
+\hline
+{\lr{Variable}} & {\lr{Domain}} \\
+\hline
+
+\(B\) & \(\{2,3\}\) \\
+\hline
+\(D\) & \(\{1,2\}\) \\
+\hline
+
+\(E\) & \(\{1\}\) \\
+\hline
+\(F\) & \(\{1\}\) \\
+\hline
+\end{tabular}
+\end{center}
+
+خواسته‌ها:
+
+\begin{enumerate}
+    \item[الف.] متغیر بعدی را با \lr{MRV} انتخاب کنید.
+    \item[ب.] در صورت وجود تساوی، \lr{Degree Heuristic} را اعمال کنید.
+    \item[ج.] در صورت وجود تساوی مجدد، ترتیب انتخاب را مشخص کنید.
+    \item[د.] فرآیند تصمیم‌گیری را مرحله به مرحله توضیح دهید.
+\end{enumerate}
+\newpage
+\subsection*{جواب}
+
+ طبق معیار \lr{MRV} در کتاب، متغیری باید انتخاب شود که کمترین تعداد مقدار قانونی باقی‌مانده را داشته باشد. بنابراین چون \(|D(B)|=2\)، \(|D(D)|=2\)، \(|D(E)|=1\) و \(|D(F)|=1\)، دو متغیر \(E\) و \(F\) کمترین دامنه را دارند. پس در این مرحله بین \(E\) و \(F\) تساوی ایجاد می‌شود.
+
+ برای شکستن این تساوی، از \lr{Degree Heuristic} استفاده می‌کنیم. در این معیار، متغیری انتخاب می‌شود که با تعداد بیشتری از متغیرهای هنوز مقداردهی‌نشده قید داشته باشد. متغیر \(E\) با \(B\) و \(F\) در ارتباط است، پس درجهٔ مؤثر آن برابر \(2\) است. از طرف دیگر، متغیر \(F\) با \(B\)، \(D\) و \(E\) در ارتباط است، پس درجهٔ مؤثر آن برابر \(3\) می‌شود.بنابراین چون \(Degree(F)=3\) و \(Degree(E)=2\)، متغیر \(F\) انتخاب می‌شود. 
+
+ اگر بعد از اعمال \lr{MRV} و \lr{Degree Heuristic} باز هم تساوی باقی می‌ماند، می‌توانستیم از ترتیب اولیهٔ متغیرها یعنی \([A,B,C,D,E,F]\) استفاده کنیم؛ اما در این مسئله تساوی شکسته می‌شود.
+
+در نتیجه، متغیر بعدی برای مقداردهی برابر است با \(F\). همچنین چون دامنهٔ آن فقط شامل مقدار \(1\) است، در صورت ادامهٔ مقداردهی خواهیم داشت: \(F=1\).
+
+\vspace{2cm}
+
+\newpage
+
+\section{اجرای AC-3}
+
+\subsection*{سؤال}
+
+متغیرها و دامنه‌ها:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|}
+\hline
+
+{\lr{Variable}} & {\lr{Domain}} \\
+\hline
+
+\(X\) & \(\{1,2,3,4\}\) \\
+\hline
+\(Y\) & \(\{2,3,4\}\) \\
+\hline
+
+\(Z\) & \(\{1,2,3\}\) \\
+\hline
+\(W\) & \(\{1,2\}\) \\
+\hline
+\end{tabular}
+\end{center}
+
+قیود:
+\[
+[X < Y]
+\]
+\[
+[Y < Z]
+\]
+\[
+[Z \neq W]
+\]
+\[
+[X \neq W]
+\]
+
+خواسته‌ها:
+
+\begin{enumerate}
+    \item[الف.] صف اولیه \lr{AC-3} را تشکیل دهید.
+    \item[ب.] الگوریتم را مرحله به مرحله اجرا کنید.
+    \item[ج.] پس از هر حذف مقدار، صف را به‌روزرسانی کنید.
+    \item[د.] دامنه‌های نهایی را بنویسید.
+    \item[ه.] مشخص کنید آیا مسئله \lr{Arc Consistent} شده است یا خیر.
+    \item[و.] آیا \lr{Arc Consistency} به تنهایی جواب مسئله را مشخص می‌کند؟ توضیح دهید.
+\end{enumerate}
+\newpage
+\subsection*{جواب}
+
+\textbf{الف)}
+در الگوریتم AC-3، صف اولیه شامل تمامی یال‌های جهت‌دار موجود در گراف محدودیت است. از آنجا که هر محدودیت دودویی بین دو متغیر، دو یال جهت‌دار ایجاد می‌کند، صف اولیه شامل ۸ یال زیر خواهد بود:
+\[
+Queue = \{ (X,Y), (Y,X), (Y,Z), (Z,Y), (Z,W), (W,Z), (X,W), (W,X) \}
+\]
+
+
+\textbf{ب-ج)}
+در جدول زیر فرآیند خروج یال‌ها از صف، بررسی سازگاری محدودیت‌ها و به‌روزرسانی صف نشان داده شده است:
+
+\begin{table}[h!]
+\centering
+\scriptsize
+\bgroup
+\def\arraystretch{1.6}
+\noindent\makebox[\textwidth]{%
+\begin{tabular}{|c|c|c|l|c|l|}
+\hline
+\textbf{مرحله} & \textbf{یال خروجی} & \textbf{بررسی شرط} & \textbf{تغییرات در دامنه (حذف مقادیر ناسازگار)} & \textbf{یال‌های افزوده} & \textbf{صف به‌روزرسانی‌شده (باقی‌مانده)} \\ \hline
+۱ & $(X, Y)$ & $X < Y$ & عدد $4$ از $D_X$ حذف می‌شود. $\rightarrow D_X = \{1,2,3\}$ & $(W, X)$ & $(Y,X), (Y,Z), (Z,Y), (Z,W), (W,Z), (X,W), (W,X)$ \\ \hline
+۲ & $(Y, X)$ & $Y > X$ & دامنه‌ها سازگارند. تغییری نمی‌کند. & — & $(Y,Z), (Z,Y), (Z,W), (W,Z), (X,W), (W,X)$ \\ \hline
+۳ & $(Y, Z)$ & $Y < Z$ & اعداد $3$ و $4$ از $D_Y$ حذف می‌شوند. $\rightarrow D_Y = \{2\}$ & $(X, Y)$ & $(Z,Y), (Z,W), (W,Z), (X,W), (W,X), (X,Y)$ \\ \hline
+۴ & $(Z, Y)$ & $Z > Y$ & اعداد $1$ و $2$ از $D_Z$ حذف می‌شوند. $\rightarrow D_Z = \{3\}$ & $(W, Z)$ & $(Z,W), (W,Z), (X,W), (W,X), (X,Y)$ \\ \hline
+۵ & $(Z, W)$ & $Z \neq W$ & دامنه‌ها سازگارند. تغییری نمی‌کند. & — & $(W,Z), (X,W), (W,X), (X,Y)$ \\ \hline
+۶ & $(W, Z)$ & $W \neq Z$ & دامنه‌ها سازگارند. تغییری نمی‌کند. & — & $(X,W), (W,X), (X,Y)$ \\ \hline
+۷ & $(X, W)$ & $X \neq W$ & دامنه‌ها سازگارند. تغییری نمی‌کند. & — & $(W,X), (X,Y)$ \\ \hline
+۸ & $(W, X)$ & $W \neq X$ & دامنه‌ها سازگارند. تغییری نمی‌کند. & — & $(X,Y)$ \\ \hline
+۹ & $(X, Y)$ & $X < Y$ &  اعداد $2$ و $3$ از $D_X$ حذف می‌شوند. $\rightarrow D_X = \{1\}$ & $(W, X)$ & $(W,X)$ \\ \hline
+۱۰ & $(W, X)$ & $W \neq X$ & عدد $1$ از $D_W$ حذف می‌شود. $\rightarrow D_W = \{2\}$ & $(Z, W)$ & $(Z,W)$ \\ \hline
+۱۱ & $(Z, W)$ & $Z \neq W$ &  دامنه‌ها سازگارند. تغییری نمی‌کند. & — & صف خالی می‌شود. پایان الگوریتم. \\ \hline
+\end{tabular}%
+}
+\egroup
+\end{table}
+
+\textbf{د)} پس از اتمام کامل الگوریتم AC-3، دامنه‌های نهایی متغیرها به این شکل کاهش می‌یابند:
+\begin{itemize}
+    \item $D_X = \{1\}$
+    \item $D_Y = \{2\}$
+    \item $D_Z = \{3\}$
+    \item $D_W = \{2\}$
+\end{itemize}
+
+
+\textbf{ه)}
+\textbf{بله.} مسئله به طور کامل Arc Consistent شده است؛ چرا که صف الگوریتم با موفقیت خالی شده و هیچ‌یک از دامنه‌ها تهی نشده‌اند.
+
+
+
+\textbf{و)}
+\textbf{در این مسئله خاص، بله.} در حالت کلی، الگوریتم سازگاری یال تنها دامنه‌ها را هرس می‌کند و لزوماً به یک پاسخ قطعی منجر نمی‌شود و نیاز به جستجوی عقب‌گرد دارد؛ اما در این مسئله، دامنه هر متغیر دقیقاً به یک مقدار واحد کاهش یافته است. از آنجا که هیچ متغیری بیش از یک انتخاب ندارد و هیچ دامنه‌ای هم تهی نشده است، الگوریتم توانسته فضای جستجو را کاملاً حل کند و جواب یکتا را به صورت زیر مشخص سازد:
+\[
+X = 1, \quad Y = 2, \quad Z = 3, \quad W = 2
+\]
+\vspace{2cm}
+
+\newpage
+\section{سؤال ۴: برنامه‌نویسی زمان‌بندی امتحانات}
+
+\subsection*{صورت سؤال}
+
+یک دانشگاه دارای ۶ درس زیر است:
+
+\begin{center}
+\begin{tabular}{ll}
+\lr{AI} & \lr{Database} \\
+\lr{Operating Systems} & \lr{Networks} \\
+\lr{Compiler} & \lr{Algorithms}
+\end{tabular}
+\end{center}
+
+چهار بازه زمانی برای برگزاری امتحان‌ها وجود دارد:
+\[
+[\mathrm{T}_1,\mathrm{T}_2,\mathrm{T}_3,\mathrm{T}_4]
+\]
+
+زوج درس‌هایی که دانشجوی مشترک دارند و بنابراین نباید هم‌زمان برگزار شوند عبارت‌اند از:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\textbf{درس اول} & \textbf{درس دوم} \\
+\midrule
+\lr{AI} & \lr{Database} \\
+\lr{AI} & \lr{Algorithms} \\
+\lr{Database} & \lr{Operating Systems} \\
+\lr{Database} & \lr{Networks} \\
+\lr{Operating Systems} & \lr{Networks} \\
+\lr{Networks} & \lr{Compiler} \\
+\lr{Compiler} & \lr{Algorithms} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+خواسته‌ها:
+\begin{enumerate}
+    \item[الف.] مسئله را به صورت \lr{CSP} مدل‌سازی کنید.
+    \item[ب.] \lr{Backtracking} ساده را پیاده‌سازی کنید.
+    \item[ج.] نسخه دارای \lr{MRV} را پیاده‌سازی کنید.
+    \item[د.] نسخه دارای \lr{MRV + Degree Heuristic} را پیاده‌سازی کنید.
+    \item[ه.] تعداد گره‌های تولیدشده در هر سه روش را گزارش کنید.
+    \item[و.] تمام زمان‌بندی‌های معتبر را پیدا کنید.
+    \item[ز.] بهترین زمان‌بندی را از نظر کمینه کردن تعداد امتحان‌ها در بازه
+    \lr{T\_4}
+    پیدا کنید.
+\end{enumerate}
+
+\subsection*{جواب}
+
+در این بخش مسئله زمان‌بندی امتحانات به صورت یک مسئله ارضای قید
+(\lr{CSP})
+مدل‌سازی و با سه روش زیر حل شده است:
+\lr{Backtracking}
+ساده،
+\lr{Backtracking + MRV}
+و
+\lr{Backtracking + MRV + Degree Heuristic}.
+کد مربوط به این بخش در فایل
+\lr{\texttt{../exam\_scheduling\_csp.py}}
+قرار دارد.
+
+\subsection*{مدل‌سازی مسئله به صورت \lr{CSP}}
+
+در این مسئله، هر درس یک متغیر و هر بازه زمانی یک مقدار ممکن برای آن متغیر است.
+بنابراین:
+
+\[
+X = \{\mathrm{AI},\mathrm{Database},\mathrm{Operating\ Systems},\mathrm{Networks},\mathrm{Compiler},\mathrm{Algorithms}\}
+\]
+
+دامنه همه متغیرها یکسان است:
+
+\[
+D(X_i)=\{\mathrm{T}_1,\mathrm{T}_2,\mathrm{T}_3,\mathrm{T}_4\}
+\]
+
+قیود مسئله از نوع دودویی و نامساوی هستند. اگر دو درس دانشجوی مشترک داشته باشند،
+نباید در یک بازه زمانی برگزار شوند. بنابراین قید کلی به صورت زیر است:
+
+\[
+X_i \neq X_j
+\]
+
+جفت‌های دارای تداخل عبارت‌اند از:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\textbf{درس اول} & \textbf{درس دوم} \\
+\midrule
+\lr{AI} & \lr{Database} \\
+\lr{AI} & \lr{Algorithms} \\
+\lr{Database} & \lr{Operating Systems} \\
+\lr{Database} & \lr{Networks} \\
+\lr{Operating Systems} & \lr{Networks} \\
+\lr{Networks} & \lr{Compiler} \\
+\lr{Compiler} & \lr{Algorithms} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+این مدل دقیقاً مشابه مسئله رنگ‌آمیزی گراف است؛ درس‌ها رأس‌های گراف، بازه‌های زمانی رنگ‌ها،
+و تداخل‌ها یال‌های گراف هستند.
+
+\subsection*{توضیح کوتاه پیاده‌سازی}
+
+در کد، لیست درس‌ها در متغیر
+\lr{\texttt{courses}}
+، بازه‌های زمانی در
+\lr{\texttt{time\_slots}}
+و قیود در
+\lr{\texttt{constraints}}
+ذخیره شده‌اند.
+سپس از روی قیود، دیکشنری همسایگی
+\lr{\texttt{adjacency}}
+ساخته شده است تا بتوان برای هر درس، درس‌های متداخل با آن را سریع پیدا کرد.
+
+تابع
+\lr{\texttt{is\_consistent}}
+بررسی می‌کند که آیا مقداردهی یک درس با مقداردهی‌های قبلی همسایه‌های آن سازگار است یا خیر.
+تابع
+\lr{\texttt{get\_legal\_values}}
+نیز مقدارهای مجاز فعلی یک متغیر را با توجه به انتساب‌های انجام‌شده برمی‌گرداند.
+
+تابع اصلی جستجو
+\lr{\texttt{backtracking\_solver}}
+یک تابع عمومی است که استراتژی انتخاب متغیر را به عنوان ورودی می‌گیرد.
+در هر مرحله، متغیر بعدی انتخاب می‌شود و مقدارها با ترتیب ثابت
+\lr{T\_1, T\_2, T\_3, T\_4}
+امتحان می‌شوند. این تابع با پارامتر
+\lr{\texttt{find\_all}}
+می‌تواند یا پس از یافتن اولین جواب متوقف شود، یا کل فضای جستجو را برای یافتن همه زمان‌بندی‌های معتبر پیمایش کند.
+
+\subsection*{روش \lr{Backtracking} ساده}
+
+در روش ساده، ترتیب انتخاب متغیرها ثابت و برابر با ترتیب زیر است:
+
+\[
+[\mathrm{AI},\mathrm{Database},\mathrm{Operating\ Systems},\mathrm{Networks},\mathrm{Compiler},\mathrm{Algorithms}]
+\]
+
+در هر گام، اولین درس مقداردهی‌نشده انتخاب می‌شود. مقدارها نیز همیشه به ترتیب
+\lr{T\_1}
+تا
+\lr{T\_4}
+امتحان می‌شوند. اگر مقدار امتحان‌شده با همسایه‌های قبلاً مقداردهی‌شده ناسازگار باشد، همان مقدار رد می‌شود.
+
+\subsection*{روش \lr{MRV}}
+
+در روش
+\lr{MRV}
+یا
+\lr{Minimum Remaining Values}
+در هر گام متغیری انتخاب می‌شود که کمترین تعداد مقدار قانونی باقی‌مانده را داشته باشد.
+یک مقدار قانونی است اگر با مقداردهی همسایه‌های قبلاً مقداردهی‌شده تناقض نداشته باشد.
+
+در صورت تساوی بین چند متغیر، ترتیب اولیه درس‌ها برای شکستن تساوی استفاده می‌شود.
+در این سؤال از
+\lr{Least Constraining Value}
+استفاده نشده است و ترتیب مقدارها همچنان ثابت است.
+
+\subsection*{روش \lr{MRV + Degree Heuristic}}
+
+در روش سوم، ابتدا همان معیار
+\lr{MRV}
+اعمال می‌شود. اگر چند متغیر کمترین تعداد مقدار قانونی را داشته باشند،
+\lr{Degree Heuristic}
+برای شکستن تساوی به کار می‌رود.
+
+در این معیار، متغیری انتخاب می‌شود که بیشترین تعداد قید با متغیرهای هنوز مقداردهی‌نشده داشته باشد؛
+بنابراین هنگام محاسبه درجه، فقط همسایه‌هایی شمرده می‌شوند که هنوز مقدار نگرفته‌اند.
+اگر پس از این مرحله نیز تساوی باقی بماند، ترتیب اولیه درس‌ها معیار نهایی است.
+
+\subsection*{نحوه شمارش گره‌های تولیدشده}
+
+طبق تعریف صورت سؤال، گره ریشه یعنی انتساب خالی به عنوان یک گره شمرده شده است.
+همچنین هر بار که الگوریتم یک مقدار را برای یک متغیر امتحان می‌کند، یک گره جدید تولید می‌شود؛
+حتی اگر آن مقدار بلافاصله ناسازگار باشد و رد شود.
+
+\subsection*{نتایج عددی}
+
+در اجرای اصلی برنامه، ابتدا هر سه روش فقط تا رسیدن به اولین جواب اجرا شدند.
+جدول زیر تعداد گره‌های تولیدشده تا اولین جواب را نشان می‌دهد:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lc}
+\toprule
+\textbf{روش} & \textbf{تعداد گره‌های تولیدشده} \\
+\midrule
+\lr{Backtracking} ساده & $11$ \\
+\lr{Backtracking + MRV} & $11$ \\
+\lr{Backtracking + MRV + Degree Heuristic} & $13$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+در این نمونه، روش
+\lr{MRV}
+تا اولین جواب تعداد گره‌ها را نسبت به روش ساده کاهش نداده است، زیرا در بسیاری از مراحل تساوی رخ می‌دهد
+و با شکستن تساوی بر اساس ترتیب اولیه، همان ترتیب روش ساده به دست می‌آید.
+اما افزودن
+\lr{Degree Heuristic}
+ترتیب انتخاب متغیرها را تغییر می‌دهد و در این مسیر خاص اولین جواب با $13$ گره به دست می‌آید.
+
+برای تولید همه جواب‌ها، برنامه یک بار فضای کامل را با روش \lr{Backtracking} ساده پیمایش کرد.
+تعداد کل زمان‌بندی‌های معتبر برابر با
+\textbf{۴۸۰}
+است و در این پیمایش کامل
+$1365$
+گره تولید شد.
+
+\subsection*{همه جواب‌ها}
+
+تمام ۴۸۰ زمان‌بندی معتبر در فایل متنی زیر ذخیره شده‌اند:
+
+\begin{center}
+\href{run:../exam_scheduling_solutions.txt}{\lr{\texttt{exam\_scheduling\_solutions.txt}}}
+\end{center}
+
+این فایل شامل خلاصه مدل، تعداد گره‌های تولیدشده، همه جواب‌ها، و همچنین جواب‌های بهینه از نظر کمینه کردن تعداد امتحان‌های بازه
+\lr{T\_4}
+است.
+
+یک نمونه زمان‌بندی معتبر که توسط روش ساده به عنوان اولین جواب پیدا شد:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lc}
+\toprule
+\textbf{درس} & \textbf{بازه زمانی} \\
+\midrule
+\lr{AI} & \lr{T\_1} \\
+\lr{Database} & \lr{T\_2} \\
+\lr{Operating Systems} & \lr{T\_1} \\
+\lr{Networks} & \lr{T\_3} \\
+\lr{Compiler} & \lr{T\_1} \\
+\lr{Algorithms} & \lr{T\_2} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{بهترین جواب‌ها بر اساس کمینه کردن تعداد امتحان‌های \lr{T\_4}}
+
+برای هر جواب، تعداد درس‌هایی که در بازه
+\lr{T\_4}
+قرار گرفته‌اند شمرده شد:
+
+\[
+\text{cost}(S)=|\{X_i \mid S(X_i)=\mathrm{T}_4\}|
+\]
+
+کمترین مقدار ممکن برابر با
+\textbf{۰}
+است؛ یعنی می‌توان تمام امتحان‌ها را فقط با سه بازه
+\lr{T\_1,T\_2,T\_3}
+زمان‌بندی کرد و نیازی به استفاده از
+\lr{T\_4}
+نیست. تعداد جواب‌هایی که این کمینه را دارند برابر با
+\textbf{۳۰}
+است.
+
+چند نمونه از جواب‌های بهینه:
+
+\begin{center}
+\scriptsize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cccccc}
+\toprule
+\textbf{شماره} & \lr{AI} & \lr{Database} & \lr{OS} & \lr{Networks} & \lr{Compiler} & \lr{Algorithms} \\
+\midrule
+$1$ & \lr{T\_1} & \lr{T\_2} & \lr{T\_1} & \lr{T\_3} & \lr{T\_1} & \lr{T\_2} \\
+$2$ & \lr{T\_1} & \lr{T\_2} & \lr{T\_1} & \lr{T\_3} & \lr{T\_1} & \lr{T\_3} \\
+$3$ & \lr{T\_1} & \lr{T\_2} & \lr{T\_1} & \lr{T\_3} & \lr{T\_2} & \lr{T\_3} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+لیست کامل ۳۰ جواب بهینه نیز در همان فایل
+\lr{\texttt{exam\_scheduling\_solutions.txt}}
+در بخش
+\lr{Best schedules}
+آمده است.
+
+\newpage
+
+\section{سؤال ۵: سودوکو}
+
+\subsection*{صورت سؤال}
+
+سودوکوی ۶×۶ زیر را در نظر بگیرید. بلوک‌ها ۳ ستون در ۲ سطر هستند.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+$1$ & $-$ & $-$ & $-$ & $6$ & $-$ \\
+\hline
+$-$ & $-$ & $3$ & $-$ & $-$ & $-$ \\
+\hline\hline
+$-$ & $5$ & $-$ & $-$ & $-$ & $2$ \\
+\hline
+$-$ & $-$ & $-$ & $4$ & $-$ & $-$ \\
+\hline\hline
+$-$ & $-$ & $-$ & $2$ & $-$ & $-$ \\
+\hline
+$-$ & $2$ & $-$ & $-$ & $-$ & $5$ \\
+\hline
+\end{tabular}
+\end{center}
+
+خواسته‌ها:
+\begin{enumerate}
+  \item[الف.] مسئله را به صورت \lr{CSP} مدل‌سازی کنید.
+  \item[ب.] \lr{Backtracking} ساده را پیاده‌سازی کنید.
+  \item[ج.] \lr{MRV} را اضافه کنید.
+  \item[د.] \lr{Forward Checking} را اضافه کنید.
+  \item[ه.] \lr{AC-3} را به عنوان مرحله پیش‌پردازش اضافه کنید.
+  \item[و.] تعداد گره‌های تولیدشده در چهار حالت زیر را مقایسه کنید:
+  \lr{Backtracking}،
+  \lr{Backtracking + MRV}،
+  \lr{Backtracking + MRV + Forward Checking}
+  و
+  \lr{AC-3 + MRV + Forward Checking}.
+  \item[ز.] نتایج را در قالب یک جدول مقایسه‌ای گزارش کنید.
+\end{enumerate}
+
+\subsection*{جواب}
+
+کد مربوط به این بخش در فایل
+\lr{\texttt{../sudoku\_csp.py}}
+قرار دارد. تابع
+\lr{\texttt{main}}
+به صورت خلاصه جدول مقایسه، جواب نهایی، و خلاصه اثر
+\lr{AC-3}
+را چاپ می‌کند.
+
+
+\subsection*{مدل‌سازی \lr{CSP}}
+
+
+یک مسئله ارضای قید (\lr{CSP}) از سه مؤلفه تشکیل می‌شود:
+متغیرها، دامنه‌ها و قیدها.
+در این بخش، سودوکوی ۶×۶ با بلوک‌های ۳×۲
+(۳ ستون و ۲ سطر)
+را به صورت
+\lr{CSP}
+مدل می‌کنیم.
+
+\subsubsection**{متغیرها}
+
+هر خانه از صفحه یک متغیر است.
+با استفاده از نمایش (\lr{row-major}):
+
+\[
+  X = \{X_{r,c} \mid r \in \{1,\ldots,6\},\; c \in \{1,\ldots,6\}\}
+  \quad \Rightarrow \quad |X| = 36
+\]
+
+\subsubsection**{دامنه‌ها}
+
+\begin{itemize}
+  \item برای خانه‌های \textbf{از پیش پر شده}:
+    $D(X_{r,c}) = \{v\}$ که $v$ همان مقدار داده‌شده است.
+
+  \item برای خانه‌های \textbf{خالی}:
+    $D(X_{r,c}) = \{1, 2, 3, 4, 5, 6\}$
+
+\end{itemize}
+
+در این مسئله ۹ خانه از پیش پر شده و ۲۷ خانه خالی وجود دارد.
+مقادیر از پیش داده‌شده عبارت‌اند از:
+
+\[
+  D(X_{1,1})=\{1\},\quad D(X_{1,5})=\{6\},\quad D(X_{2,3})=\{3\},\quad
+  D(X_{3,2})=\{5\},\quad D(X_{3,6})=\{2\},
+\]
+\[
+  D(X_{4,4})=\{4\},\quad D(X_{5,4})=\{2\},\quad D(X_{6,2})=\{2\},\quad
+  D(X_{6,6})=\{5\}.
+\]
+
+\subsubsection**{قیدها}
+
+قیدهای سودوکو از نوع \textbf{همه متفاوت} (\lr{all-different}) هستند
+و به صورت مجموعه‌ای از قیدهای دودویی نامساوی پیاده‌سازی می‌شوند.
+دو خانه اگر «همسایه» باشند (یعنی در یک سطر، یک ستون یا یک بلوک مشترک قرار داشته باشند)
+باید مقادیر متفاوت داشته باشند:
+
+\[
+  X_i \neq X_j \qquad \forall\; (i,j) \in \text{Peers}
+\]
+
+سه نوع قید وجود دارد:
+
+\begin{enumerate}
+  \item \textbf{قید سطری:} در هر سطر، همه ۶ مقدار متمایز باشند.
+    \[
+      \forall r,\; \forall c_1 \neq c_2:\; X_{r,c_1} \neq X_{r,c_2}
+    \]
+  \item \textbf{قید ستونی:} در هر ستون، همه ۶ مقدار متمایز باشند.
+    \[
+      \forall c,\; \forall r_1 \neq r_2:\; X_{r_1,c} \neq X_{r_2,c}
+    \]
+  \item \textbf{قید بلوک:} در هر بلوک ۳×۲، همه ۶ مقدار متمایز باشند.
+    صفحه به ۶ بلوک تقسیم می‌شود (دو ردیف بلوک × سه ستون بلوک):
+
+    \begin{center}
+    \begin{tabular}{|c|c|}
+    \hline
+    بلوک ۰ (سطرهای ۱-۲، ستون‌های ۱-۳) & بلوک ۱ (سطرهای ۱-۲، ستون‌های ۴-۶) \\
+    \hline
+    بلوک ۲ (سطرهای ۳-۴، ستون‌های ۱-۳) & بلوک ۳ (سطرهای ۳-۴، ستون‌های ۴-۶) \\
+    \hline
+    بلوک ۴ (سطرهای ۵-۶، ستون‌های ۱-۳) & بلوک ۵ (سطرهای ۵-۶، ستون‌های ۴-۶) \\
+    \hline
+    \end{tabular}
+    \end{center}
+\end{enumerate}
+
+تعداد کل قیدهای دودویی:
+
+\[
+  6 \times \binom{6}{2} \;(\text{سطری}) \;+\; 6 \times \binom{6}{2} \;(\text{ستونی}) \;+\;
+  6 \times \binom{6}{2} \;(\text{بلوکی}) \;-\; \text{همپوشانی} \;=\; 216
+\]
+
+هر خانه دقیقاً ۱۲ همسایه دارد (۵ در سطر + ۵ در ستون + ۲ در بلوک که قبلاً نبوده‌اند).
+
+
+\subsection*{سودوکوی اولیه}
+
+
+جدول زیر وضعیت اولیه سودوکو را نشان می‌دهد. خانه‌های رنگی مقادیر از پیش داده‌شده‌اند.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+\cellcolor{given}$1$ & $-$ & $-$ & $-$ & \cellcolor{given}$6$ & $-$ \\
+\hline
+$-$ & $-$ & \cellcolor{given}$3$ & $-$ & $-$ & $-$ \\
+\hline\hline
+$-$ & \cellcolor{given}$5$ & $-$ & $-$ & $-$ & \cellcolor{given}$2$ \\
+\hline
+$-$ & $-$ & $-$ & \cellcolor{given}$4$ & $-$ & $-$ \\
+\hline\hline
+$-$ & $-$ & $-$ & \cellcolor{given}$2$ & $-$ & $-$ \\
+\hline
+$-$ & \cellcolor{given}$2$ & $-$ & $-$ & $-$ & \cellcolor{given}$5$ \\
+\hline
+\end{tabular}
+\end{center}
+
+
+\subsection*{روش‌های حل}
+
+
+\subsubsection*{\lr{Backtracking} ساده}
+
+در این روش، متغیرها به ترتیب ثابت سطر-ستون انتخاب می‌شوند:
+
+\[
+  X_{1,1},\; X_{1,2},\; \ldots,\; X_{1,6},\; X_{2,1},\; \ldots,\; X_{6,6}
+\]
+
+خانه‌های از پیش پر شده از همان ابتدا در مقداردهی اولیه قرار دارند و رد می‌شوند.
+مقادیر به ترتیب صعودی $1, 2, 3, 4, 5, 6$ آزمایش می‌شوند.
+در هر گام، سازگاری مقدار انتخابی با تمام همسایه‌های مقداردهی‌شده بررسی می‌شود.
+اگر هیچ مقداری مناسب نبود، الگوریتم به گام قبل برمی‌گردد.
+
+\textbf{شمارش گره:}
+هر بار که یک مقدار برای یک متغیر آزمایش می‌شود یک گره شمرده می‌شود،
+حتی اگر آن مقدار فوری ناسازگار باشد.
+
+\subsubsection*{\lr{Backtracking} با \lr{MRV}}
+
+اکتشافی
+\lr{MRV}
+(\lr{Minimum Remaining Values})
+در هر گام متغیری را انتخاب می‌کند که \textbf{کمترین تعداد مقدار قانونی باقی‌مانده} را داشته باشد.
+یک مقدار در صورتی «قانونی» است که با تمام همسایه‌های مقداردهی‌شده سازگار باشد:
+
+\[
+  \text{LegalValues}(X_{r,c}) = \{v \in D(X_{r,c}) \mid \forall\, nb \in \text{Peers}(X_{r,c})\; \text{assigned},\; \text{assignment}[nb] \neq v\}
+\]
+
+در صورت تساوی، متغیری که زودتر در ترتیب سطر-ستون قرار دارد انتخاب می‌شود.
+دامنه‌ها در این روش تغییر نمی‌کنند؛ فیلتر به صورت پویا و در لحظه انتخاب انجام می‌شود.
+
+\subsubsection*{\lr{Backtracking} با \lr{MRV} و \lr{Forward Checking}}
+
+\lr{Forward Checking}
+پس از هر مقداردهی $X = v$، مقدار $v$ را از دامنه همه همسایه‌های هنوز مقداردهی‌نشده حذف می‌کند:
+
+\[
+  \forall\; nb \in \text{Peers}(X)\; \text{(unassigned)}:\quad D(nb) \;\leftarrow\; D(nb) \setminus \{v\}
+\]
+
+اگر دامنه هر همسایه‌ای خالی شد، مقداردهی فعلی رد و الگوریتم بازمی‌گردد.
+این روش شکست‌های قریب‌الوقوع را زودتر تشخیص می‌دهد.
+
+پیاده‌سازی از کپی دامنه‌ها در هر سطح بازگشت استفاده می‌کند
+(هر فراخوانی بازگشتی یک نسخه جدید از دامنه‌ها می‌گیرد)
+تا بازگشت به حالت قبل به صورت خودکار انجام شود.
+
+\subsubsection*{\lr{AC-3} به عنوان پیش‌پردازش}
+
+\lr{AC-3}
+یک الگوریتم سازگاری قوسی است که \textbf{پیش از شروع جستجو} اجرا می‌شود
+و دامنه‌ها را تا حد ممکن کوچک می‌کند.
+
+\textbf{الگوریتم \lr{AC-3} مطابق شبه‌کد کتاب:}
+
+\begin{latin}
+\begin{algorithm}[H]
+\caption{AC-3$(csp)$}
+\begin{algorithmic}[1]
+  \State $\text{queue} \leftarrow$ all directed arcs in $csp$
+  \While{$\text{queue}$ is not empty}
+    \State $(X_i, X_j) \leftarrow \textsc{Pop}(\text{queue})$
+    \If{\textsc{Revise}$(csp, X_i, X_j)$}
+      \If{$|D_i| = 0$}
+        \State \Return \textbf{False}
+      \EndIf
+      \For{each $X_k \in \text{Neighbors}(X_i) \setminus \{X_j\}$}
+        \State add $(X_k, X_i)$ to $\text{queue}$
+      \EndFor
+    \EndIf
+  \EndWhile
+  \State \Return \textbf{True}
+\end{algorithmic}
+\end{algorithm}
+\end{latin}
+
+\textbf{الگوریتم \lr{REVISE} مطابق شبه‌کد کتاب:}
+
+\begin{latin}
+\begin{algorithm}[H]
+\caption{REVISE$(csp, X_i, X_j)$}
+\begin{algorithmic}[1]
+  \State $\text{revised} \leftarrow \textbf{False}$
+  \For{each $x \in D_i$}
+    \If{there is no $y \in D_j$ such that $(x,y)$ satisfies the constraint between $X_i$ and $X_j$}
+      \State delete $x$ from $D_i$
+      \State $\text{revised} \leftarrow \textbf{True}$
+    \EndIf
+  \EndFor
+  \State \Return $\text{revised}$
+\end{algorithmic}
+\end{algorithm}
+\end{latin}
+
+پس از اجرای
+\lr{AC-3}
+یا همه یال‌ها سازگار قوسی هستند، یا دامنه یک متغیر تهی شده و مشخص می‌شود که مسئله با دامنه‌های فعلی قابل حل نیست.
+در سودوکو، قید بین دو خانه همسایه از نوع نامساوی است؛ بنابراین در تابع
+\lr{REVISE}
+مقدار
+$x$
+از
+$D_i$
+فقط وقتی حذف می‌شود که در
+$D_j$
+هیچ مقدار متفاوتی برای پشتیبانی از آن وجود نداشته باشد. در حالت خاص قید
+$X_i \neq X_j$،
+این دقیقاً وقتی رخ می‌دهد که
+$D_j=\{x\}$
+باشد.
+
+\textbf{تأثیر \lr{AC-3} روی این سودوکو:}
+
+\lr{AC-3}
+پیش از جستجو ۱۰۶ مقدار از دامنه‌های ۲۷ خانه خالی حذف کرد
+(از ۱۶۲ مقدار به ۵۶ مقدار).
+مهم‌تر از آن، ۹ خانه اضافه به دامنه تک‌عضوی رسیدند
+(تمام ۶ خانه خالی سطر اول و ۶ خانه خالی سطر دوم کاملاً مشخص شدند):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{ll}
+\toprule
+\textbf{خانه} & \textbf{مقدار تعیین‌شده توسط \lr{AC-3}} \\
+\midrule
+$X_{1,2}$ & $4$ \\
+$X_{1,3}$ & $2$ \\
+$X_{1,4}$ & $5$ \\
+$X_{1,6}$ & $3$ \\
+$X_{2,1}$ & $5$ \\
+$X_{2,2}$ & $6$ \\
+$X_{2,4}$ & $1$ \\
+$X_{2,5}$ & $2$ \\
+$X_{2,6}$ & $4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+دامنه‌های پس از \lr{AC-3} برای تمام خانه‌ها (سطرهای ۳ تا ۶):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+\cellcolor{given}$\{1\}$ & \cellcolor{given}$\{4\}$ & \cellcolor{given}$\{2\}$
+ & \cellcolor{given}$\{5\}$ & \cellcolor{given}$\{6\}$ & \cellcolor{given}$\{3\}$ \\
+\hline
+\cellcolor{given}$\{5\}$ & \cellcolor{given}$\{6\}$ & \cellcolor{given}$\{3\}$
+ & \cellcolor{given}$\{1\}$ & \cellcolor{given}$\{2\}$ & \cellcolor{given}$\{4\}$ \\
+\hline\hline
+$\{3,4,6\}$ & \cellcolor{given}$\{5\}$ & $\{1,4,6\}$
+ & $\{3,6\}$ & $\{1,3\}$ & \cellcolor{given}$\{2\}$ \\
+\hline
+$\{2,3,6\}$ & $\{1,3\}$ & $\{1,6\}$
+ & \cellcolor{given}$\{4\}$ & $\{1,3,5\}$ & $\{1,6\}$ \\
+\hline\hline
+$\{3,4,6\}$ & $\{1,3\}$ & $\{1,4,5,6\}$
+ & \cellcolor{given}$\{2\}$ & $\{1,3,4\}$ & $\{1,6\}$ \\
+\hline
+$\{3,4,6\}$ & \cellcolor{given}$\{2\}$ & $\{1,4,6\}$
+ & $\{3,6\}$ & $\{1,3,4\}$ & \cellcolor{given}$\{5\}$ \\
+\hline
+\end{tabular}
+
+\small{خانه‌های آبی: مقادیر اولیه یا مشخص‌شده توسط \lr{AC-3}}
+\end{center}
+
+
+\subsection*{جدول مقایسه‌ای}
+
+
+جدول زیر تعداد گره‌های تولیدشده در هر روش را نشان می‌دهد.
+\textbf{گره} به هر بار آزمایش یک مقدار برای یک متغیر اطلاق می‌شود،
+حتی اگر آن آزمایش فوری شکست بخورد یا توسط \lr{Forward Checking} رد شود.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
+\toprule
+\textbf{روش} & \textbf{تعداد گره‌های تولیدشده} & \textbf{وضعیت حل} \\
+\midrule
+\lr{Backtracking} ساده                          & $204$  & حل شد \\
+\lr{Backtracking} + \lr{MRV}                    & $144$  & حل شد \\
+\lr{Backtracking} + \lr{MRV} + \lr{Forward Checking} & $35$  & حل شد \\
+\lr{AC-3} + \lr{MRV} + \lr{Forward Checking}   & $35$   & حل شد \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\subsection*{جواب نهایی سودوکو}
+
+
+هر چهار روش به جواب یکسانی رسیدند:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+\cellcolor{given}$1$ & \cellcolor{solved}$4$ & \cellcolor{solved}$2$
+ & \cellcolor{solved}$5$ & \cellcolor{given}$6$ & \cellcolor{solved}$3$ \\
+\hline
+\cellcolor{solved}$5$ & \cellcolor{solved}$6$ & \cellcolor{given}$3$
+ & \cellcolor{solved}$1$ & \cellcolor{solved}$2$ & \cellcolor{solved}$4$ \\
+\hline\hline
+\cellcolor{solved}$4$ & \cellcolor{given}$5$ & \cellcolor{solved}$1$
+ & \cellcolor{solved}$6$ & \cellcolor{solved}$3$ & \cellcolor{given}$2$ \\
+\hline
+\cellcolor{solved}$2$ & \cellcolor{solved}$3$ & \cellcolor{solved}$6$
+ & \cellcolor{given}$4$ & \cellcolor{solved}$5$ & \cellcolor{solved}$1$ \\
+\hline\hline
+\cellcolor{solved}$3$ & \cellcolor{solved}$1$ & \cellcolor{solved}$5$
+ & \cellcolor{given}$2$ & \cellcolor{solved}$4$ & \cellcolor{solved}$6$ \\
+\hline
+\cellcolor{solved}$6$ & \cellcolor{given}$2$ & \cellcolor{solved}$4$
+ & \cellcolor{solved}$3$ & \cellcolor{solved}$1$ & \cellcolor{given}$5$ \\
+\hline
+\end{tabular}
+
+\small{آبی: داده‌های اولیه \quad سبز: مقادیر حل‌شده}
+\end{center}
+
+\end{document}
