@@ -14,7 +14,7 @@ from src.minesweeper import MineSweeper
 pyDatalog.create_terms(
     "R, C, R2, C2, N, F, U, "
     "Adjacent, Value, FlaggedNeighborCount, HiddenNeighborCount, UnknownCell, "
-    "Safe, Mine"
+    "Safe, Mine, HiddenNeighbor, FrontierClue"
 )
 
 # Suggested constants for the agent's internal memory (Shadow Board)
@@ -74,6 +74,9 @@ def init_rules():
         & UnknownCell(R2, C2)
     )
 
+    HiddenNeighbor(R, C, R2, C2) <= Adjacent(R, C, R2, C2) & UnknownCell(R2, C2)
+    FrontierClue(R, C, N, F) <= Value(R, C, N) & FlaggedNeighborCount(R, C, F)
+
 
 def update_knowledge_base(agent_board, rows, cols):
     """
@@ -109,6 +112,9 @@ def update_knowledge_base(agent_board, rows, cols):
                     if agent_board[(nr, nc)] == AGENT_UNKNOWN
                 )
 
+                if hidden_count == 0:
+                    continue  # fully resolved, can't inform Safe/Mine anymore
+
                 +Value(r, c, val)
                 dynamic_facts.append((Value, (r, c, val)))
 
@@ -119,11 +125,78 @@ def update_knowledge_base(agent_board, rows, cols):
                 dynamic_facts.append((HiddenNeighborCount, (r, c, hidden_count)))
 
 
+def build_frontier_constraints():
+    constraints = []
+    for r, c, n, f in FrontierClue(R, C, N, F):
+        unknown = {(r2, c2) for r2, c2 in HiddenNeighbor(r, c, R2, C2)}
+        if unknown:
+            constraints.append([unknown, n - f])
+    return constraints
+
+
+def frontier_subset_inference():
+    constraints = build_frontier_constraints()
+    safe_cells = set()
+    mine_cells = set()
+
+    changed = True
+    while changed:
+        changed = False
+
+        # Fold in anything learned so far: drop known cells from each
+        # constraint and account for any known mines in its value.
+        refreshed = []
+        for cells, val in constraints:
+            known_mines_here = cells & mine_cells
+            cells = cells - safe_cells - mine_cells
+            val -= len(known_mines_here)
+            if cells:
+                refreshed.append([cells, val])
+        constraints = refreshed
+
+        # Trivial resolution: remaining_mines == 0 -> all safe;
+        # remaining_mines == len(frontier) -> all mines.
+        remaining = []
+        for cells, val in constraints:
+            if val <= 0:
+                if not cells <= safe_cells:
+                    changed = True
+                safe_cells.update(cells)
+            elif val >= len(cells):
+                if not cells <= mine_cells:
+                    changed = True
+                mine_cells.update(cells)
+            else:
+                remaining.append([cells, val])
+        constraints = remaining
+
+        # Pairwise elimination between overlapping frontiers.
+        for i in range(len(constraints)):
+            for j in range(len(constraints)):
+                if i == j:
+                    continue
+                set_i, val_i = constraints[i]
+                set_j, val_j = constraints[j]
+                if set_i.isdisjoint(set_j):
+                    continue
+
+                only_i = set_i - set_j
+                only_j = set_j - set_i
+                diff = val_i - val_j
+
+                if only_i and diff == len(only_i):
+                    mine_cells.update(only_i)
+                    safe_cells.update(only_j)
+                    changed = True
+                elif only_j and diff == -len(only_j):
+                    mine_cells.update(only_j)
+                    safe_cells.update(only_i)
+                    changed = True
+
+    return list(safe_cells), list(mine_cells)
+
+
 def query_solver():
-    """
-    Task 4: Query the inference engine to find safe cells and mines.
-    Output: Two lists containing the coordinates of safe cells and mine cells.
-    """
     safe_moves = []
     mine_moves = []
 
@@ -139,6 +212,10 @@ def query_solver():
         for r, c in mine_result:
             if (r, c) not in mine_moves:
                 mine_moves.append((r, c))
+
+    frontier_safe, frontier_mines = frontier_subset_inference()
+    safe_moves.extend(move for move in frontier_safe if move not in safe_moves)
+    mine_moves.extend(move for move in frontier_mines if move not in mine_moves)
 
     return safe_moves, mine_moves
 
@@ -273,5 +350,5 @@ def prolog_solver(game):
 if __name__ == "__main__":
     # Default settings based on the first scenario (Simple level) in the evaluation table
     # Note: auto_flood_fill must be False to preserve the encapsulation of the agent's memory.
-    ms = MineSweeper(rows=45, cols=80, mines=200, seed=-1, auto_flood_fill=False)
+    ms = MineSweeper(rows=20, cols=20, mines=75, seed=123, auto_flood_fill=False)
     prolog_solver(ms)
